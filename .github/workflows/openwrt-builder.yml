@@ -128,6 +128,22 @@ jobs:
       if: (!cancelled())
       run: df -hT
 
+    - name: Export Final Config
+      if: (!cancelled())
+      run: |
+        cp openwrt/.config .config_exported
+        # 也可以同时导出一个精简版(Seed Config)，方便以后直接复用
+        cd openwrt && ./scripts/diffconfig.sh > ../seed.config
+
+    - name: Upload Config to Artifacts
+      uses: actions/upload-artifact@v4
+      if: (!cancelled())
+      with:
+        name: ImmortalWrt_Final_Config_${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: |
+          .config_exported
+          seed.config
+
     - name: Upload bin directory
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
